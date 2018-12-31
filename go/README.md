@@ -1,0 +1,1 @@
+Go implemention of mbcrypt.

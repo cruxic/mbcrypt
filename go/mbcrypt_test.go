@@ -4,7 +4,7 @@ import (
 	"testing"
 	"encoding/hex"
 	"github.com/stretchr/testify/assert"
-	"github.com/cruxic/mbcrypt-go/x-crypto-bcrypt-fork"
+	"github.com/cruxic/mbcrypt/go/x-crypto-bcrypt-fork"
 )
 
 func Test_bcrypt(t *testing.T) {

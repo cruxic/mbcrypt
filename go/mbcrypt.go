@@ -13,7 +13,7 @@ Most applications will be better off using a memory-hard KDF like Argon2.
 package mbcrypt
 
 import (
-	"github.com/cruxic/mbcrypt-go/x-crypto-bcrypt-fork"
+	"github.com/cruxic/mbcrypt/go/x-crypto-bcrypt-fork"
 	"crypto/sha256"
 	"errors"
 	"strconv"
