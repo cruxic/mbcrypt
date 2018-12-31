@@ -1,4 +1,4 @@
-# mbcrypt-go
+# mbcrypt
 
 mbcrypt is a KDF which increases the cost of guessing attacks by executing the hash (bcrypt)
 in multiple threads.  Since multi-core processors are commonplace there is no time penalty for
