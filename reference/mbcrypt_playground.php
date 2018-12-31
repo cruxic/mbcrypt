@@ -1,0 +1,78 @@
+<?php
+
+/*
+Currently this is just a playground so I can confirm the correct implementation of my Go and JavaScript code.
+*/
+
+//Encode bytes as base64 using the bcrypt alphabet
+function bcrypt_base64_encode($data) {
+	$std_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	$bcrypt_alphabet = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+	$b64 = strtr(base64_encode($data), $std_alphabet, $bcrypt_alphabet);
+
+	//remove trailing ==
+	return str_replace("=", "", $b64);
+}
+
+function _parallel_bcrypt_thread($threadIndex, $pass, $salt, $cost) {
+	//derive a distinct password and salt for each thread to work on
+	$threadByte = chr($threadIndex + 1);
+	$threadPassHex = hash("sha256", $threadByte . $pass, false);
+	$threadSalt = hash("sha256", $threadByte . $salt, true);
+	$threadSalt = bcrypt_base64_encode(substr($threadSalt, 0, 16));
+
+	$options = array("cost" => $cost, "salt" => $threadSalt);
+	$hash = password_hash($threadPassHex, PASSWORD_BCRYPT, $options);
+
+	//remove the first 29 non-unique characters
+	return substr($hash, 29);
+}
+
+function parallel_bcrypt($nThreads, $pass, $salt, $cost) {
+	if (strlen($salt) != 16)
+		throw new Exception("wrong salt length");
+
+	$hashes = "";
+	for ($i = 0; $i < $nThreads; $i++) {
+		$h = _parallel_bcrypt_thread($i, $pass, $salt, $cost);
+		$hashes .= $h;
+	}
+
+	return hash("sha256", $hashes, true);
+}
+
+function test() {
+	$salt = "calcpass2017a a@b.c";
+	$salt = substr(hash("sha256", $salt, true), 0, 16);
+
+	printf("parallel_bcrypt: %s\n", bin2hex(parallel_bcrypt(4, "Hello World", $salt, 13)));
+}
+
+function byteSequence($start, $count) {
+	$seq = '';
+	for ($i = 0; $i < $count; $i++) {
+		$seq .= chr(($start + $i) & 0xFF);
+	}
+
+	return $seq;
+}
+
+function test2() {
+	$seq = byteSequence(1, 32);
+	$key = substr($seq, 0, 16);
+	$salt = substr($seq, 16);
+
+	printf("parallel_bcrypt: %s\n", bin2hex(parallel_bcrypt(4, $key, $salt, 13)));
+}
+
+function test3() {
+	$salt = hex2bin("71d79f8218a39259a7a29aabb2dbafc3");
+
+	for ($i = 1; $i <= 8; $i++) {
+		printf("\"%s\", //%d threads\n", bin2hex(parallel_bcrypt($i, "Super Secret Password", $salt, 5)), $i);
+	}
+
+}
+
+test3();
