@@ -9,5 +9,35 @@ When all threads finish, the results are combined with sha256 to produce 32 byte
 Since the plain-text password is first hashed with sha256, it is not subject
  to bcrypt's 72 character limit.
 
-Most applications will be better off using a memory-hard KDF like Argon2.  This implementation
-is part of my quest to find the most efficient KDF which can be executed in a web browser.
+mbcrypt is part of my quest to find a KDF which can run efficiently in a web browser (JavaScript).
+If you are not constrained to JavaScript use [Argon2](https://www.argon2.com/) instead.
+
+## Algorithm
+
+In pseudo-code, the algorithm is:
+
+```javascript
+
+function mbcrypt(password, salt, nThreads, cost) {
+	h = sha256.New();
+
+	for (p = 1; p <= nThreads; p++) {
+		threadPass = sha256(concat(p, password);
+
+		//hex encode to avoid null byte issues with some bcrypt implementations
+		threadPassHex = hexEncode(threadPass);
+
+		threadSalt = sha256(concat(p, salt)[0:16];
+
+		threadHash = bcrypt(threadPassHex, threadSalt, cost);
+
+		//We remove the salt prefix from the bcrypt base64.
+		threadHash = substr(threadHash, 29, len(threadHash));
+
+		h.Update(threadHash);
+	}
+
+	hash = h.Finalize();  //returns 32 bytes
+	return hash;
+}
+```
