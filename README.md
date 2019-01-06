@@ -14,7 +14,7 @@ If you are not constrained to JavaScript use [Argon2](https://www.argon2.com/) i
 
 ## Algorithm
 
-In pseudo-code, the algorithm is:
+In pseudo-code, the algorithm is (as a single thread for clarity):
 
 ```javascript
 
@@ -22,16 +22,16 @@ function mbcrypt(password, salt, nThreads, cost) {
 	h = sha256.New();
 
 	for (p = 1; p <= nThreads; p++) {
-		threadPass = sha256(concat(p, password);
+		threadPass = sha256(concat(p, password));
 
 		//hex encode to avoid null byte issues with some bcrypt implementations
 		threadPassHex = hexEncode(threadPass);
 
-		threadSalt = sha256(concat(p, salt)[0:16];
+		threadSalt = sha256(concat(p, salt))[0:16];
 
 		threadHash = bcrypt(threadPassHex, threadSalt, cost);
 
-		//We remove the salt prefix from the bcrypt base64.
+		//Remove the salt prefix from the bcrypt base64.
 		threadHash = substr(threadHash, 29, len(threadHash));
 
 		h.Update(threadHash);
