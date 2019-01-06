@@ -22,12 +22,12 @@ function mbcrypt(password, salt, nThreads, cost) {
 	h = sha256.New();
 
 	for (p = 1; p <= nThreads; p++) {
-		threadPass = sha256(concat(p, password));
+		threadPass = sha256(concat([p], password));
 
 		//hex encode to avoid null byte issues with some bcrypt implementations
 		threadPassHex = hexEncode(threadPass);
 
-		threadSalt = sha256(concat(p, salt))[0:16];
+		threadSalt = sha256(concat([p], salt))[0:16];
 
 		threadHash = bcrypt(threadPassHex, threadSalt, cost);
 
